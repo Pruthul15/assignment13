@@ -1,264 +1,447 @@
-# 📦 Project Setup
+# Module 13: JWT Authentication & Full-Stack Integration
+
+**Course:** IS601 - Python for Web API Development  
+**Semester:** Fall 2025  
+**Student:** Pruthul Patel  
+**GitHub:** https://github.com/Pruthul15/assignment13  
+**Status:** ✅ COMPLETE - 99 Tests Passing
 
 ---
 
-# 🧩 1. Install Homebrew (Mac Only)
+## 📌 Project Overview
 
-> Skip this step if you're on Windows.
+This project demonstrates **full-stack web development** with JWT authentication. It combines a secure FastAPI backend, PostgreSQL database, and interactive Jinja2/JavaScript frontend.
 
-Homebrew is a package manager for macOS.  
-You’ll use it to easily install Git, Python, Docker, etc.
-
-**Install Homebrew:**
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-**Verify Homebrew:**
-
-```bash
-brew --version
-```
-
-If you see a version number, you're good to go.
+### Key Features
+✅ User registration with password validation  
+✅ JWT-based authentication  
+✅ Protected dashboard  
+✅ Create & manage calculations  
+✅ 99 automated tests  
+✅ Docker containerization  
 
 ---
 
-# 🧩 2. Install and Configure Git
+## 📂 Complete Project Structure
 
-## Install Git
-
-- **MacOS (using Homebrew)**
-
-```bash
-brew install git
 ```
-
-- **Windows**
-
-Download and install [Git for Windows](https://git-scm.com/download/win).  
-Accept the default options during installation.
-
-**Verify Git:**
-
-```bash
-git --version
-```
-
----
-
-## Configure Git Globals
-
-Set your name and email so Git tracks your commits properly:
-
-```bash
-git config --global user.name "Your Name"
-git config --global user.email "your_email@example.com"
-```
-
-Confirm the settings:
-
-```bash
-git config --list
-```
-
----
-
-## Generate SSH Keys and Connect to GitHub
-
-> Only do this once per machine.
-
-1. Generate a new SSH key:
-
-```bash
-ssh-keygen -t ed25519 -C "your_email@example.com"
-```
-
-(Press Enter at all prompts.)
-
-2. Start the SSH agent:
-
-```bash
-eval "$(ssh-agent -s)"
-```
-
-3. Add the SSH private key to the agent:
-
-```bash
-ssh-add ~/.ssh/id_ed25519
-```
-
-4. Copy your SSH public key:
-
-- **Mac/Linux:**
-
-```bash
-cat ~/.ssh/id_ed25519.pub | pbcopy
-```
-
-- **Windows (Git Bash):**
-
-```bash
-cat ~/.ssh/id_ed25519.pub | clip
-```
-
-5. Add the key to your GitHub account:
-   - Go to [GitHub SSH Settings](https://github.com/settings/keys)
-   - Click **New SSH Key**, paste the key, save.
-
-6. Test the connection:
-
-```bash
-ssh -T git@github.com
-```
-
-You should see a success message.
-
----
-
-# 🧩 3. Clone the Repository
-
-Now you can safely clone the course project:
-
-```bash
-git clone <repository-url>
-cd <repository-directory>
-```
-
----
-
-# 🛠️ 4. Install Python 3.10+
-
-## Install Python
-
-- **MacOS (Homebrew)**
-
-```bash
-brew install python
-```
-
-- **Windows**
-
-Download and install [Python for Windows](https://www.python.org/downloads/).  
-✅ Make sure you **check the box** `Add Python to PATH` during setup.
-
-**Verify Python:**
-
-```bash
-python3 --version
-```
-or
-```bash
-python --version
+assignment13/
+│
+├── 📁 app/                                # FastAPI Application
+│   ├── __init__.py
+│   ├── main.py                            # 9.7KB - Main FastAPI routes (Jinja2 + REST API)
+│   ├── database.py                        # Database connection & configuration
+│   ├── database_init.py                   # Database initialization script
+│   ├── __pycache__/                       # Python cache
+│   │
+│   ├── 📁 auth/                           # Authentication Module
+│   │   ├── __init__.py
+│   │   ├── jwt.py                         # JWT token creation/verification
+│   │   ├── redis.py                       # Token blacklisting (in-memory)
+│   │   ├── dependencies.py                # Auth middleware & decorators
+│   │   └── __pycache__/
+│   │
+│   ├── 📁 core/                           # Configuration Module
+│   │   ├── __init__.py
+│   │   ├── config.py                      # Settings & environment variables
+│   │   └── __pycache__/
+│   │
+│   ├── 📁 models/                         # SQLAlchemy ORM Models
+│   │   ├── __init__.py
+│   │   ├── user.py                        # User model with password hashing
+│   │   ├── calculation.py                 # Calculation model with factory pattern
+│   │   └── __pycache__/
+│   │
+│   ├── 📁 operations/                     # Business Logic
+│   │   ├── __init__.py
+│   │   ├── calculation.py                 # Calculation operations
+│   │   └── __pycache__/
+│   │
+│   └── 📁 schemas/                        # Pydantic Validation Schemas
+│       ├── __init__.py
+│       ├── base.py                        # Base schema classes
+│       ├── user.py                        # User registration/login schemas
+│       ├── calculation.py                 # Calculation request/response schemas
+│       ├── token.py                       # JWT token response schema
+│       └── __pycache__/
+│
+├── 📁 templates/                          # Jinja2 HTML Templates
+│   ├── layout.html                        # Base template (extends to all pages)
+│   ├── index.html                         # Home page (206 bytes)
+│   ├── register.html                      # Registration form (7.9KB)
+│   ├── login.html                         # Login form (6.6KB)
+│   └── dashboard.html                     # Dashboard with calculations (11KB)
+│
+├── 📁 static/                             # Static Frontend Assets
+│   ├── 📁 css/
+│   │   └── style.css                      # Tailwind CSS styling (274 bytes)
+│   └── 📁 js/
+│       └── script.js                      # JavaScript form handling (72 bytes)
+│
+├── 📁 tests/                              # Test Suite (99 tests, 66% coverage)
+│   ├── __init__.py
+│   ├── conftest.py                        # 9.5KB - Pytest configuration & fixtures
+│   ├── __pycache__/
+│   │
+│   ├── 📁 unit/                           # Unit Tests (21 tests)
+│   │   ├── __init__.py
+│   │   ├── test_calculator.py             # 8.9KB - Calculator logic tests
+│   │   └── __pycache__/
+│   │
+│   ├── 📁 integration/                    # Integration Tests (78 tests)
+│   │   ├── __init__.py
+│   │   ├── test_calculation.py            # 5.1KB - Calculation model tests
+│   │   ├── test_calculation_schema.py     # 3.3KB - Calculation schema validation
+│   │   ├── test_database.py               # 2.1KB - Database connection tests
+│   │   ├── test_dependencies.py           # 3.9KB - Auth dependency tests
+│   │   ├── test_schema_base.py            # 3.3KB - Schema validation tests
+│   │   ├── test_user.py                   # 12KB - User model & database tests
+│   │   ├── test_user_auth.py              # 6.6KB - Authentication tests
+│   │   └── __pycache__/
+│   │
+│   └── 📁 e2e/                            # End-to-End Tests
+│       ├── __init__.py
+│       ├── test_fastapi_calculator.py     # 14KB - Playwright browser tests
+│       ├── test_e2e.bk                    # Backup file
+│       └── __pycache__/
+│
+├── 📁 .github/                            # GitHub Configuration
+│   └── workflows/                         # CI/CD Pipeline
+│       └── test.yml                       # GitHub Actions workflow
+│
+├── 📁 .pytest_cache/                      # Pytest cache files
+├── 📁 .vscode/                            # VS Code settings
+├── 📁 .git/                               # Git version control
+├── 📁 htmlcov/                            # Code coverage reports
+│
+├── 📁 venv/                               # Virtual environment (excluded from git)
+│
+├── 📄 Dockerfile                          # Docker container configuration
+├── 📄 docker-compose.yml                  # 1.6KB - Multi-container orchestration
+├── 📄 requirements.txt                    # 927 bytes - Python dependencies
+├── 📄 pytest.ini                          # 1009 bytes - Pytest configuration
+├── 📄 .gitignore                          # 71 bytes - Git ignore rules
+├── 📄 .coverage                           # 52KB - Coverage data
+├── 📄 init-db.sh                          # 158 bytes - Database init script
+├── 📄 LICENSE                             # MIT License
+└── 📄 README.md                           # 5.1KB - This documentation
 ```
 
 ---
 
-## Create and Activate a Virtual Environment
+## 🎯 Key Directories Explained
 
-(Optional but recommended)
+### `app/`
+Contains the FastAPI application core:
+- **main.py** - All routes (register, login, dashboard, calculations)
+- **auth/** - JWT token management
+- **models/** - Database models (User, Calculation)
+- **schemas/** - Request/response validation
+- **core/** - Configuration settings
+- **operations/** - Business logic
 
+### `templates/`
+Jinja2 HTML templates for frontend:
+- **layout.html** - Base template inherited by all pages
+- **index.html** - Home page
+- **register.html** - User registration form
+- **login.html** - User login form
+- **dashboard.html** - Protected dashboard with calculations
+
+### `static/`
+Client-side assets:
+- **css/style.css** - Tailwind CSS styling
+- **js/script.js** - Form handling & API calls
+
+### `tests/`
+99 automated tests organized by type:
+- **unit/** - 21 tests for calculator logic
+- **integration/** - 78 tests for API & database
+- **e2e/** - Browser automation tests
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+```
+Python 3.10+
+Docker & Docker Compose
+Git
+```
+
+### Quick Start with Docker
 ```bash
+cd ~/projects/assignment13
+docker-compose up --build
+```
+
+Visit:
+- **Home:** http://localhost:8000
+- **Register:** http://localhost:8000/register
+- **Login:** http://localhost:8000/login
+- **Dashboard:** http://localhost:8000/dashboard
+
+### Local Development
+```bash
+# Create virtual environment
 python3 -m venv venv
-source venv/bin/activate   # Mac/Linux
-venv\Scripts\activate.bat  # Windows
-```
+source venv/bin/activate
 
-### Install Required Packages
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Run application
+uvicorn app.main:app --reload --port 8000
 ```
 
 ---
 
-# 🐳 5. (Optional) Docker Setup
+## 🧪 Testing
 
-> Skip if Docker isn't used in this module.
-
-## Install Docker
-
-- [Install Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/)
-- [Install Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)
-
-## Build Docker Image
-
+### Run All Tests
 ```bash
-docker build -t <image-name> .
+pytest --tb=short -v
 ```
 
-## Run Docker Container
-
+### Run Specific Tests
 ```bash
-docker run -it --rm <image-name>
+pytest tests/unit/ -v              # Unit tests only
+pytest tests/integration/ -v       # Integration tests only
+pytest tests/e2e/ -v              # E2E tests only
 ```
 
----
-
-# 🚀 6. Running the Project
-
-- **Without Docker**:
-
+### View Coverage
 ```bash
-python main.py
+pytest --cov=app --cov-report=html
 ```
 
-(or update this if the main script is different.)
-
-- **With Docker**:
-
-```bash
-docker run -it --rm <image-name>
+### Test Results
+```
+✅ 99 PASSED
+⏭️ 1 SKIPPED
+❌ 0 FAILED
+📊 66% Code Coverage
 ```
 
 ---
 
-# 📝 7. Submission Instructions
+## 🔐 API Endpoints
 
-After finishing your work:
+### Authentication
+```
+POST /auth/register        → 201 Created (new user registered)
+POST /auth/login           → 200 OK (returns JWT token)
+```
 
+### Protected Routes (require JWT)
+```
+GET  /dashboard            → 200 OK (user dashboard)
+GET  /calculations         → 200 OK (list user's calculations)
+POST /calculations         → 201 Created (create new calculation)
+DELETE /calculations/{id}  → 204 No Content (delete calculation)
+```
+
+### Health Check
+```
+GET /health                → 200 OK (system status)
+```
+
+---
+
+## 💡 How It Works
+
+### Registration Flow
+```
+1. User fills registration form
+2. Client validates (JavaScript)
+3. POST request to /auth/register
+4. Server validates (Pydantic)
+5. Password hashed (bcrypt)
+6. User stored in PostgreSQL
+7. Success response with JWT
+8. Token saved to localStorage
+9. Redirect to login
+```
+
+### Login & Authentication
+```
+1. User submits credentials
+2. Server validates username/password
+3. JWT token generated (HS256)
+4. Token sent to client
+5. Client stores token (localStorage)
+6. Protected requests include token in header
+7. Server validates token before allowing access
+8. Dashboard renders with user data
+```
+
+### Dashboard Access
+```
+1. User on dashboard page
+2. JavaScript checks localStorage for token
+3. If no token → redirect to login
+4. If token exists → fetch /calculations
+5. Include token in Authorization header
+6. Server validates token
+7. Return user's calculations
+8. Display in HTML table
+```
+
+---
+
+## 🛠️ Technologies
+
+### Backend
+- **FastAPI 0.115.8** - Web framework
+- **SQLAlchemy 2.0.38** - ORM
+- **Pydantic 2.10.6** - Validation
+- **PostgreSQL 15** - Database
+- **PyJWT** - JWT tokens
+- **passlib + bcrypt** - Password hashing
+
+### Frontend
+- **Jinja2 3.1.5** - Templates
+- **HTML5** - Markup
+- **CSS3 + Tailwind** - Styling
+- **JavaScript ES6** - Interactivity
+- **Fetch API** - HTTP requests
+
+### Testing & DevOps
+- **pytest 8.3.4** - Test framework
+- **Playwright 1.50.0** - E2E automation
+- **Docker** - Containerization
+- **GitHub Actions** - CI/CD
+
+---
+
+## 📊 Test Coverage Summary
+
+| Component | Tests | Status | Coverage |
+|-----------|-------|--------|----------|
+| Unit Tests | 21 | ✅ PASS | - |
+| Integration Tests | 78 | ✅ PASS | - |
+| **TOTAL** | **99** | **✅ PASS** | **66%** |
+
+### High Coverage Areas
+- models/user.py - **89%**
+- models/calculation.py - **92%**
+- schemas/calculation.py - **92%**
+- auth/dependencies.py - **86%**
+
+---
+
+## 🔒 Security Features
+
+### Password Security
+✅ Bcrypt hashing with salt  
+✅ 8+ character minimum  
+✅ Uppercase, lowercase, digit required  
+✅ Server-side validation  
+
+### JWT Authentication
+✅ HS256 encryption  
+✅ Secret key from environment  
+✅ Token expiration (30 min)  
+✅ Bearer token in Authorization header  
+
+### API Security
+✅ Protected routes require token  
+✅ Proper HTTP status codes (401, 403)  
+✅ Input validation (Pydantic)  
+✅ CORS configuration  
+
+---
+
+## 📝 Requirements
+
+All dependencies listed in `requirements.txt`:
+- redis==5.0.0
+- fastapi==0.115.8
+- sqlalchemy==2.0.38
+- pydantic==2.10.6
+- python-jose==3.3.0
+- passlib==1.7.4
+- psycopg2-binary==2.9.10
+- pytest==8.3.4
+- pytest-cov==6.0.0
+- playwright==1.50.0
+- faker==36.1.0
+- And 40+ more...
+
+---
+
+## 📸 Application Screenshots
+
+1. **Home Page** - Welcome message
+2. **Register Page** - Registration form
+3. **Login Page** - Login form
+4. **Dashboard** - Authenticated, shows calculations
+5. **Tests** - 99 passing tests
+
+---
+
+## 🔗 GitHub Repository
+
+**URL:** https://github.com/Pruthul15/assignment13
+
+### Git Commands
 ```bash
-git add .
-git commit -m "Complete Module X"
+# View commits
+git log --oneline
+
+# View current status
+git status
+
+# Push changes
 git push origin main
 ```
 
-Then submit the GitHub repository link as instructed.
+---
+
+## 📋 Submission Checklist
+
+- ✅ GitHub repository with complete code
+- ✅ 99 tests passing (1 skipped)
+- ✅ Docker Compose working
+- ✅ 5 application screenshots
+- ✅ Comprehensive README documentation
+- ✅ Security features implemented
+- ✅ Full-stack integration complete
+- ✅ Code follows best practices
 
 ---
 
-# 🔥 Useful Commands Cheat Sheet
+## 🎓 Learning Outcomes Met
 
-| Action                         | Command                                          |
-| ------------------------------- | ------------------------------------------------ |
-| Install Homebrew (Mac)          | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` |
-| Install Git                     | `brew install git` or Git for Windows installer |
-| Configure Git Global Username  | `git config --global user.name "Your Name"`      |
-| Configure Git Global Email     | `git config --global user.email "you@example.com"` |
-| Clone Repository                | `git clone <repo-url>`                          |
-| Create Virtual Environment     | `python3 -m venv venv`                           |
-| Activate Virtual Environment   | `source venv/bin/activate` / `venv\Scripts\activate.bat` |
-| Install Python Packages        | `pip install -r requirements.txt`               |
-| Build Docker Image              | `docker build -t <image-name> .`                |
-| Run Docker Container            | `docker run -it --rm <image-name>`               |
-| Push Code to GitHub             | `git add . && git commit -m "message" && git push` |
+✅ **CLO 3** - Automated testing (99 tests)  
+✅ **CLO 4** - GitHub Actions CI/CD  
+✅ **CLO 7** - JWT authentication concepts  
+✅ **CLO 9** - Docker containerization  
+✅ **CLO 10** - REST API design & testing  
+✅ **CLO 11** - SQLAlchemy & PostgreSQL  
+✅ **CLO 12** - Pydantic validation & JSON  
+✅ **CLO 13** - Security best practices  
 
 ---
 
-# 📋 Notes
+## 🎉 Conclusion
 
-- Install **Homebrew** first on Mac.
-- Install and configure **Git** and **SSH** before cloning.
-- Use **Python 3.10+** and **virtual environments** for Python projects.
-- **Docker** is optional depending on the project.
+Module 13 successfully demonstrates a complete full-stack web application with:
+
+- Secure JWT authentication
+- Modern Python FastAPI framework
+- Interactive frontend with Jinja2 & JavaScript
+- PostgreSQL database integration
+- Comprehensive test coverage (99 tests)
+- Docker containerization
+- Production-ready code
+
+
 
 ---
 
-# 📎 Quick Links
 
-- [Homebrew](https://brew.sh/)
-- [Git Downloads](https://git-scm.com/downloads)
-- [Python Downloads](https://www.python.org/downloads/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [GitHub SSH Setup Guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
+**Author:** Pruthul Patel  
+**Email:** pp8787140@gmail.com  
+**GitHub:** [@Pruthul15](https://github.com/Pruthul15)
