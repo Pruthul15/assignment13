@@ -1,447 +1,431 @@
-# Module 13: JWT Authentication & Full-Stack Integration
+# Assignment 13: JWT Authentication & CI/CD Pipeline
 
-**Course:** IS601 - Python for Web API Development  
-**Semester:** Fall 2025  
-**Student:** Pruthul Patel  
-**GitHub:** https://github.com/Pruthul15/assignment13  
-**Status:** ✅ COMPLETE - 99 Tests Passing
+## 📋 Project Overview
 
----
+This project implements a complete JWT-based authentication system for a FastAPI calculator application. It includes user registration/login, secure password hashing, front-end forms with client-side validation, comprehensive E2E tests, and a full CI/CD pipeline with Docker and GitHub Actions.
 
-## 📌 Project Overview
+## 🎯 Key Features
 
-This project demonstrates **full-stack web development** with JWT authentication. It combines a secure FastAPI backend, PostgreSQL database, and interactive Jinja2/JavaScript frontend.
-
-### Key Features
-✅ User registration with password validation  
-✅ JWT-based authentication  
-✅ Protected dashboard  
-✅ Create & manage calculations  
-✅ 99 automated tests  
-✅ Docker containerization  
-
----
-
-## 📂 Complete Project Structure
-
-```
-assignment13/
-│
-├── 📁 app/                                # FastAPI Application
-│   ├── __init__.py
-│   ├── main.py                            # 9.7KB - Main FastAPI routes (Jinja2 + REST API)
-│   ├── database.py                        # Database connection & configuration
-│   ├── database_init.py                   # Database initialization script
-│   ├── __pycache__/                       # Python cache
-│   │
-│   ├── 📁 auth/                           # Authentication Module
-│   │   ├── __init__.py
-│   │   ├── jwt.py                         # JWT token creation/verification
-│   │   ├── redis.py                       # Token blacklisting (in-memory)
-│   │   ├── dependencies.py                # Auth middleware & decorators
-│   │   └── __pycache__/
-│   │
-│   ├── 📁 core/                           # Configuration Module
-│   │   ├── __init__.py
-│   │   ├── config.py                      # Settings & environment variables
-│   │   └── __pycache__/
-│   │
-│   ├── 📁 models/                         # SQLAlchemy ORM Models
-│   │   ├── __init__.py
-│   │   ├── user.py                        # User model with password hashing
-│   │   ├── calculation.py                 # Calculation model with factory pattern
-│   │   └── __pycache__/
-│   │
-│   ├── 📁 operations/                     # Business Logic
-│   │   ├── __init__.py
-│   │   ├── calculation.py                 # Calculation operations
-│   │   └── __pycache__/
-│   │
-│   └── 📁 schemas/                        # Pydantic Validation Schemas
-│       ├── __init__.py
-│       ├── base.py                        # Base schema classes
-│       ├── user.py                        # User registration/login schemas
-│       ├── calculation.py                 # Calculation request/response schemas
-│       ├── token.py                       # JWT token response schema
-│       └── __pycache__/
-│
-├── 📁 templates/                          # Jinja2 HTML Templates
-│   ├── layout.html                        # Base template (extends to all pages)
-│   ├── index.html                         # Home page (206 bytes)
-│   ├── register.html                      # Registration form (7.9KB)
-│   ├── login.html                         # Login form (6.6KB)
-│   └── dashboard.html                     # Dashboard with calculations (11KB)
-│
-├── 📁 static/                             # Static Frontend Assets
-│   ├── 📁 css/
-│   │   └── style.css                      # Tailwind CSS styling (274 bytes)
-│   └── 📁 js/
-│       └── script.js                      # JavaScript form handling (72 bytes)
-│
-├── 📁 tests/                              # Test Suite (99 tests, 66% coverage)
-│   ├── __init__.py
-│   ├── conftest.py                        # 9.5KB - Pytest configuration & fixtures
-│   ├── __pycache__/
-│   │
-│   ├── 📁 unit/                           # Unit Tests (21 tests)
-│   │   ├── __init__.py
-│   │   ├── test_calculator.py             # 8.9KB - Calculator logic tests
-│   │   └── __pycache__/
-│   │
-│   ├── 📁 integration/                    # Integration Tests (78 tests)
-│   │   ├── __init__.py
-│   │   ├── test_calculation.py            # 5.1KB - Calculation model tests
-│   │   ├── test_calculation_schema.py     # 3.3KB - Calculation schema validation
-│   │   ├── test_database.py               # 2.1KB - Database connection tests
-│   │   ├── test_dependencies.py           # 3.9KB - Auth dependency tests
-│   │   ├── test_schema_base.py            # 3.3KB - Schema validation tests
-│   │   ├── test_user.py                   # 12KB - User model & database tests
-│   │   ├── test_user_auth.py              # 6.6KB - Authentication tests
-│   │   └── __pycache__/
-│   │
-│   └── 📁 e2e/                            # End-to-End Tests
-│       ├── __init__.py
-│       ├── test_fastapi_calculator.py     # 14KB - Playwright browser tests
-│       ├── test_e2e.bk                    # Backup file
-│       └── __pycache__/
-│
-├── 📁 .github/                            # GitHub Configuration
-│   └── workflows/                         # CI/CD Pipeline
-│       └── test.yml                       # GitHub Actions workflow
-│
-├── 📁 .pytest_cache/                      # Pytest cache files
-├── 📁 .vscode/                            # VS Code settings
-├── 📁 .git/                               # Git version control
-├── 📁 htmlcov/                            # Code coverage reports
-│
-├── 📁 venv/                               # Virtual environment (excluded from git)
-│
-├── 📄 Dockerfile                          # Docker container configuration
-├── 📄 docker-compose.yml                  # 1.6KB - Multi-container orchestration
-├── 📄 requirements.txt                    # 927 bytes - Python dependencies
-├── 📄 pytest.ini                          # 1009 bytes - Pytest configuration
-├── 📄 .gitignore                          # 71 bytes - Git ignore rules
-├── 📄 .coverage                           # 52KB - Coverage data
-├── 📄 init-db.sh                          # 158 bytes - Database init script
-├── 📄 LICENSE                             # MIT License
-└── 📄 README.md                           # 5.1KB - This documentation
-```
-
----
-
-## 🎯 Key Directories Explained
-
-### `app/`
-Contains the FastAPI application core:
-- **main.py** - All routes (register, login, dashboard, calculations)
-- **auth/** - JWT token management
-- **models/** - Database models (User, Calculation)
-- **schemas/** - Request/response validation
-- **core/** - Configuration settings
-- **operations/** - Business logic
-
-### `templates/`
-Jinja2 HTML templates for frontend:
-- **layout.html** - Base template inherited by all pages
-- **index.html** - Home page
-- **register.html** - User registration form
-- **login.html** - User login form
-- **dashboard.html** - Protected dashboard with calculations
-
-### `static/`
-Client-side assets:
-- **css/style.css** - Tailwind CSS styling
-- **js/script.js** - Form handling & API calls
-
-### `tests/`
-99 automated tests organized by type:
-- **unit/** - 21 tests for calculator logic
-- **integration/** - 78 tests for API & database
-- **e2e/** - Browser automation tests
-
----
+- ✅ **JWT Authentication** - Secure token-based authentication
+- ✅ **User Registration** - Email and username validation with password hashing
+- ✅ **User Login** - Credential verification and JWT token generation
+- ✅ **Front-End Pages** - HTML forms for registration, login, and dashboard
+- ✅ **Protected Routes** - Dashboard accessible only to authenticated users
+- ✅ **Playwright E2E Tests** - Comprehensive browser automation tests
+- ✅ **CI/CD Pipeline** - Automated testing and Docker Hub deployment
+- ✅ **Code Coverage** - 66%+ coverage with unit and integration tests
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-```
-Python 3.10+
-Docker & Docker Compose
-Git
-```
 
-### Quick Start with Docker
+- Docker & Docker Compose
+- Python 3.10+
+- Git
+
+### Installation
+
 ```bash
-cd ~/projects/assignment13
-docker-compose up --build
-```
+# Clone the repository
+git clone https://github.com/Pruthul15/assignment13.git
+cd assignment13
 
-Visit:
-- **Home:** http://localhost:8000
-- **Register:** http://localhost:8000/register
-- **Login:** http://localhost:8000/login
-- **Dashboard:** http://localhost:8000/dashboard
-
-### Local Development
-```bash
 # Create virtual environment
 python3 -m venv venv
 source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Run application
-uvicorn app.main:app --reload --port 8000
 ```
 
----
+## 🐳 Running with Docker
 
-## 🧪 Testing
+### Start the Application
+
+```bash
+# Build and start all containers
+docker-compose up -d
+
+# Wait for services to start (about 15 seconds)
+sleep 15
+
+# Verify app is running
+curl http://localhost:8000/health
+```
+
+### Access the Application
+
+- **Home Page:** http://localhost:8000/
+- **Register:** http://localhost:8000/register
+- **Login:** http://localhost:8000/login
+- **Dashboard:** http://localhost:8000/dashboard (requires login)
+- **API Docs:** http://localhost:8000/docs
+- **pgAdmin:** http://localhost:5050
+
+### Stop the Application
+
+```bash
+docker-compose down
+```
+
+## 🧪 Running Tests
+
+### Activate Virtual Environment
+
+```bash
+source venv/bin/activate
+```
 
 ### Run All Tests
+
 ```bash
-pytest --tb=short -v
+# Run all tests with coverage
+pytest -v --tb=short
+
+# Expected: 99 PASSED
 ```
 
-### Run Specific Tests
+### Run Only E2E Tests
+
 ```bash
-pytest tests/unit/ -v              # Unit tests only
-pytest tests/integration/ -v       # Integration tests only
-pytest tests/e2e/ -v              # E2E tests only
+# Run Playwright E2E tests
+pytest tests/e2e/ -v --tb=short
 ```
 
-### View Coverage
+### Run Only Unit Tests
+
 ```bash
-pytest --cov=app --cov-report=html
+# Run unit tests
+pytest tests/unit/ -v --tb=short
 ```
 
-### Test Results
-```
-✅ 99 PASSED
-⏭️ 1 SKIPPED
-❌ 0 FAILED
-📊 66% Code Coverage
+### Run Only Integration Tests
+
+```bash
+# Run integration tests
+pytest tests/integration/ -v --tb=short
 ```
 
----
+### View Coverage Report
+
+```bash
+# Generate and display coverage report
+pytest --cov=app --cov-report=term-missing
+
+# Open HTML coverage report
+open htmlcov/index.html
+```
 
 ## 🔐 API Endpoints
 
 ### Authentication
-```
-POST /auth/register        → 201 Created (new user registered)
-POST /auth/login           → 200 OK (returns JWT token)
-```
 
-### Protected Routes (require JWT)
-```
-GET  /dashboard            → 200 OK (user dashboard)
-GET  /calculations         → 200 OK (list user's calculations)
-POST /calculations         → 201 Created (create new calculation)
-DELETE /calculations/{id}  → 204 No Content (delete calculation)
-```
+#### Register New User
+```bash
+POST /auth/register
+Content-Type: application/json
 
-### Health Check
-```
-GET /health                → 200 OK (system status)
+{
+  "username": "newuser",
+  "email": "user@example.com",
+  "first_name": "John",
+  "last_name": "Doe",
+  "password": "SecurePass@123",
+  "confirm_password": "SecurePass@123"
+}
 ```
 
----
-
-## 💡 How It Works
-
-### Registration Flow
-```
-1. User fills registration form
-2. Client validates (JavaScript)
-3. POST request to /auth/register
-4. Server validates (Pydantic)
-5. Password hashed (bcrypt)
-6. User stored in PostgreSQL
-7. Success response with JWT
-8. Token saved to localStorage
-9. Redirect to login
+**Response:** `201 Created`
+```json
+{
+  "id": "uuid",
+  "username": "newuser",
+  "email": "user@example.com",
+  "is_active": true
+}
 ```
 
-### Login & Authentication
-```
-1. User submits credentials
-2. Server validates username/password
-3. JWT token generated (HS256)
-4. Token sent to client
-5. Client stores token (localStorage)
-6. Protected requests include token in header
-7. Server validates token before allowing access
-8. Dashboard renders with user data
-```
+#### Login
+```bash
+POST /auth/login
+Content-Type: application/json
 
-### Dashboard Access
-```
-1. User on dashboard page
-2. JavaScript checks localStorage for token
-3. If no token → redirect to login
-4. If token exists → fetch /calculations
-5. Include token in Authorization header
-6. Server validates token
-7. Return user's calculations
-8. Display in HTML table
+{
+  "username": "newuser",
+  "password": "SecurePass@123"
+}
 ```
 
----
+**Response:** `200 OK`
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+  "token_type": "bearer",
+  "expires_at": "2025-11-05T04:26:11Z"
+}
+```
 
-## 🛠️ Technologies
+## 🧑‍💻 Using the Web Interface
 
-### Backend
-- **FastAPI 0.115.8** - Web framework
-- **SQLAlchemy 2.0.38** - ORM
-- **Pydantic 2.10.6** - Validation
-- **PostgreSQL 15** - Database
-- **PyJWT** - JWT tokens
-- **passlib + bcrypt** - Password hashing
+### Register a New User
 
-### Frontend
-- **Jinja2 3.1.5** - Templates
-- **HTML5** - Markup
-- **CSS3 + Tailwind** - Styling
-- **JavaScript ES6** - Interactivity
-- **Fetch API** - HTTP requests
+1. Go to http://localhost:8000/register
+2. Fill in the form:
+   - Username
+   - Email (valid format required)
+   - First Name
+   - Last Name
+   - Password (8+ chars, uppercase, lowercase, digit, special char)
+   - Confirm Password
+3. Click Register
+4. On success, redirects to login page
 
-### Testing & DevOps
-- **pytest 8.3.4** - Test framework
-- **Playwright 1.50.0** - E2E automation
-- **Docker** - Containerization
-- **GitHub Actions** - CI/CD
+### Login
 
----
+1. Go to http://localhost:8000/login
+2. Enter username and password
+3. Click Login
+4. On success, redirects to dashboard with JWT token stored in localStorage
 
-## 📊 Test Coverage Summary
+### Dashboard
 
-| Component | Tests | Status | Coverage |
-|-----------|-------|--------|----------|
-| Unit Tests | 21 | ✅ PASS | - |
-| Integration Tests | 78 | ✅ PASS | - |
-| **TOTAL** | **99** | **✅ PASS** | **66%** |
+1. After login, you're on the dashboard
+2. Can create calculations:
+   - Select operation type (Addition, Subtraction, etc.)
+   - Enter numbers
+   - Click Calculate
+3. View calculation history
+4. Delete calculations
+5. Click Logout to exit
 
-### High Coverage Areas
-- models/user.py - **89%**
-- models/calculation.py - **92%**
-- schemas/calculation.py - **92%**
-- auth/dependencies.py - **86%**
+## 🔑 Password Requirements
 
----
+Passwords must contain:
+- ✅ Minimum 8 characters
+- ✅ At least one uppercase letter
+- ✅ At least one lowercase letter
+- ✅ At least one digit
+- ✅ At least one special character (!@#$%^&*, etc.)
+
+## 📊 Technology Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Backend** | FastAPI, SQLAlchemy, PostgreSQL |
+| **Frontend** | Jinja2, HTML5, CSS3, JavaScript |
+| **Authentication** | JWT (HS256), bcrypt |
+| **Testing** | pytest, Playwright, pytest-cov |
+| **DevOps** | Docker, Docker Compose, GitHub Actions |
+| **Cache** | Redis |
+
+## 🔄 CI/CD Pipeline
+
+### GitHub Actions Workflow
+
+The pipeline automatically runs on every push to main branch:
+
+1. **Test Job** (runs in ~5 min)
+   - Spins up PostgreSQL and Redis containers
+   - Runs all 99 tests
+   - Calculates code coverage
+   - Uploads coverage report
+
+2. **Security Job** (runs in ~2 min)
+   - Builds Docker image
+   - Scans with Trivy for vulnerabilities
+   - Uploads results
+
+3. **Deploy Job** (runs in ~3 min)
+   - Logs into Docker Hub
+   - Pushes image with `latest` and git SHA tags
+   - Updates Docker Hub repository
+
+4. **Notify Job** (runs in ~1 min)
+   - Summarizes pipeline status
+
+**View workflows:** https://github.com/Pruthul15/assignment13/actions
+
+## 🐳 Docker Hub
+
+Docker image is automatically pushed to:
+- **Repository:** https://hub.docker.com/r/pruthul123/assignment13
+- **Tags:**
+  - `latest` - Most recent build
+  - `<git-sha>` - Specific commit version
+
+### Pull and Run Image
+
+```bash
+# Pull the image
+docker pull pruthul123/assignment13:latest
+
+# Run the image
+docker run -p 8000:8000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e JWT_SECRET_KEY="your-secret-key" \
+  pruthul123/assignment13:latest
+```
+
+## 📁 Project Structure
+
+```
+assignment13/
+├── app/
+│   ├── auth/              # Authentication logic
+│   │   ├── jwt.py        # JWT token generation
+│   │   ├── dependencies.py # Auth dependencies
+│   │   └── redis.py      # Token blacklisting
+│   ├── models/
+│   │   ├── user.py       # User model with auth methods
+│   │   └── calculation.py # Calculation models (polymorphic)
+│   ├── schemas/
+│   │   ├── user.py       # Pydantic user schemas
+│   │   ├── token.py      # Token schemas
+│   │   └── calculation.py # Calculation schemas
+│   ├── core/
+│   │   └── config.py     # Configuration
+│   ├── database.py       # Database setup
+│   ├── database_init.py  # Table initialization
+│   └── main.py           # FastAPI app
+├── templates/
+│   ├── register.html     # Registration page
+│   ├── login.html        # Login page
+│   ├── dashboard.html    # Dashboard (protected)
+│   ├── layout.html       # Base template
+│   └── index.html        # Home page
+├── static/
+│   └── css/
+│       └── style.css     # Styling
+├── tests/
+│   ├── unit/            # Unit tests
+│   ├── integration/      # Integration tests
+│   ├── e2e/             # End-to-end tests
+│   └── conftest.py      # Pytest configuration
+├── .github/
+│   └── workflows/
+│       └── test.yml     # GitHub Actions workflow
+├── docker-compose.yml    # Multi-container setup
+├── Dockerfile           # Docker image
+├── requirements.txt     # Python dependencies
+└── README.md           # This file
+```
+
+## 🧹 Database Initialization
+
+Tables are automatically created on application startup:
+
+```bash
+# Manual initialization (if needed)
+docker-compose exec web python -m app.database_init
+```
 
 ## 🔒 Security Features
 
-### Password Security
-✅ Bcrypt hashing with salt  
-✅ 8+ character minimum  
-✅ Uppercase, lowercase, digit required  
-✅ Server-side validation  
+- ✅ **Password Hashing** - bcrypt with salt
+- ✅ **JWT Tokens** - HS256 algorithm with 30-min expiration
+- ✅ **CORS** - Properly configured for cross-origin requests
+- ✅ **SQL Injection Prevention** - SQLAlchemy parameterized queries
+- ✅ **Token Blacklisting** - Redis-backed token invalidation
+- ✅ **Protected Routes** - Dependency injection for auth checks
 
-### JWT Authentication
-✅ HS256 encryption  
-✅ Secret key from environment  
-✅ Token expiration (30 min)  
-✅ Bearer token in Authorization header  
+## 🐛 Troubleshooting
 
-### API Security
-✅ Protected routes require token  
-✅ Proper HTTP status codes (401, 403)  
-✅ Input validation (Pydantic)  
-✅ CORS configuration  
+### Port Already in Use
 
----
+If port 5432 or 8000 is already in use:
 
-## 📝 Requirements
-
-All dependencies listed in `requirements.txt`:
-- redis==5.0.0
-- fastapi==0.115.8
-- sqlalchemy==2.0.38
-- pydantic==2.10.6
-- python-jose==3.3.0
-- passlib==1.7.4
-- psycopg2-binary==2.9.10
-- pytest==8.3.4
-- pytest-cov==6.0.0
-- playwright==1.50.0
-- faker==36.1.0
-- And 40+ more...
-
----
-
-## 📸 Application Screenshots
-
-1. **Home Page** - Welcome message
-2. **Register Page** - Registration form
-3. **Login Page** - Login form
-4. **Dashboard** - Authenticated, shows calculations
-5. **Tests** - 99 passing tests
-
----
-
-## 🔗 GitHub Repository
-
-**URL:** https://github.com/Pruthul15/assignment13
-
-### Git Commands
 ```bash
-# View commits
-git log --oneline
+# Change Docker port (edit docker-compose.yml)
+sed -i 's/5432:5432/5433:5432/g' docker-compose.yml
+sed -i 's/:5432/:5433/g' app/core/config.py
 
-# View current status
-git status
-
-# Push changes
-git push origin main
+# Then restart
+docker-compose down && docker-compose up -d
 ```
 
+### Database Connection Error
+
+```bash
+# Reinitialize database
+docker-compose exec web python -m app.database_init
+
+# Or restart all containers
+docker-compose restart
+```
+
+### Tests Failing
+
+```bash
+# Clean up and restart
+docker-compose down -v
+docker-compose up -d
+sleep 15
+pytest -v --tb=short
+```
+
+## 📝 Environment Variables
+
+Create a `.env` file for local development:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/fastapi_db
+JWT_SECRET_KEY=your-super-secret-key-change-this
+JWT_REFRESH_SECRET_KEY=your-refresh-secret-key
+ALGORITHM=HS256
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=fastapi_db
+```
+
+## 🎯 Assignment Requirements Met
+
+### 1. JWT Authentication ✅
+- ✅ `/register` endpoint validates and stores users
+- ✅ `/login` endpoint authenticates and returns JWT
+- ✅ Pydantic validation on all inputs
+- ✅ Password hashing with bcrypt
+
+### 2. Front-End Integration ✅
+- ✅ Register page with HTML form
+- ✅ Login page with HTML form
+- ✅ Dashboard page (protected)
+- ✅ Client-side validation
+- ✅ JWT stored in localStorage
+
+### 3. Playwright E2E Tests ✅
+- ✅ Positive tests: Registration & login success
+- ✅ Negative tests: Invalid input handling
+- ✅ All 12 E2E tests passing
+
+### 4. CI/CD Pipeline ✅
+- ✅ GitHub Actions workflow configured
+- ✅ All 99 tests pass automatically
+- ✅ Docker image pushed to Docker Hub
+- ✅ Security scanning with Trivy
+
+### 5. Documentation ✅
+- ✅ README with full instructions
+- ✅ REFLECTION.md with experiences
+- ✅ Inline code comments
+- ✅ API endpoint documentation
+
+## 👤 Author
+
+- **Name:** Pruthul Patel
+- **GitHub:** https://github.com/Pruthul15
+- **Docker Hub:** https://hub.docker.com/u/pruthul123
+
+## 📄 License
+
+MIT License - See LICENSE file for details
+
+## 🔗 Links
+
+- **GitHub Repository:** https://github.com/Pruthul15/assignment13
+- **Docker Hub Repository:** https://hub.docker.com/r/pruthul123/assignment13
+- **GitHub Actions:** https://github.com/Pruthul15/assignment13/actions
+- **API Documentation:** http://localhost:8000/docs (when running locally)
+
 ---
 
-## 📋 Submission Checklist
-
-- ✅ GitHub repository with complete code
-- ✅ 99 tests passing (1 skipped)
-- ✅ Docker Compose working
-- ✅ 5 application screenshots
-- ✅ Comprehensive README documentation
-- ✅ Security features implemented
-- ✅ Full-stack integration complete
-- ✅ Code follows best practices
-
----
-
-## 🎓 Learning Outcomes Met
-
-✅ **CLO 3** - Automated testing (99 tests)  
-✅ **CLO 4** - GitHub Actions CI/CD  
-✅ **CLO 7** - JWT authentication concepts  
-✅ **CLO 9** - Docker containerization  
-✅ **CLO 10** - REST API design & testing  
-✅ **CLO 11** - SQLAlchemy & PostgreSQL  
-✅ **CLO 12** - Pydantic validation & JSON  
-✅ **CLO 13** - Security best practices  
-
----
-
-## 🎉 Conclusion
-
-Module 13 successfully demonstrates a complete full-stack web application with:
-
-- Secure JWT authentication
-- Modern Python FastAPI framework
-- Interactive frontend with Jinja2 & JavaScript
-- PostgreSQL database integration
-- Comprehensive test coverage (99 tests)
-- Docker containerization
-- Production-ready code
-
-
-
----
-
-
-**Author:** Pruthul Patel  
-**Email:** pp8787140@gmail.com  
-**GitHub:** [@Pruthul15](https://github.com/Pruthul15)
