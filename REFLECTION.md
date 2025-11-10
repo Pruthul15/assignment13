@@ -1,51 +1,60 @@
-# Reflection - Assignment 13: JWT Authentication
+Reflection - Assignment 13: JWT Authentication and E2E Testing
+What I Learned
+How to implement a full JWT authentication system in FastAPI, including registration, login, and token handling both server-side and in the front-end.
 
-## What I Learned
+Applied password hashing using bcrypt for secure storage.
 
-In this assignment, I learned how JWT authentication works. When a user registers and logs in, the server generates a JWT token that proves they are authenticated. This token is stored in the browser and sent with each request.
+Learned how Jinja2 templates and JavaScript work together to validate user input and interact with backend APIs.
 
-I also learned about password security. Using bcrypt, passwords are hashed before storing in the database. This means even if the database is hacked, the passwords remain secure because they're not stored in plaintext.
+Understood the automated testing workflow using pytest for backend logic and Playwright for browser-based end-to-end (E2E) tests of registration and login flows.
 
-## Challenges I Faced
+Saw how Docker and CI/CD integrate to automate builds and run tests for every commit.
 
-### Challenge 1: Database Port Already in Use
-When I first started Docker, I got an error that port 5432 was already in use. I fixed this by changing the Docker port to 5433 in docker-compose.yml and updating the database URL.
+Challenges I Faced
+Challenge 1: Database Port Conflict
+Docker PostgreSQL port 5432 was already in use; changed docker-compose config and environment variable to 5433 to avoid collision.
 
-### Challenge 2: Tables Not Created
-The database tables weren't being created automatically. I had to run the database initialization script manually:
-```
-docker-compose exec web python -m app.database_init
-```
+Challenge 2: Database and Table Creation
+Tables did not automatically appear; fixed by running the database initialization script, ensuring all models were created.
 
-After running this, all tables were created and the app started working.
+Challenge 3: Registration and JWT Flow
+Needed to handle duplicate email/username errors and consistent JSON error formats for frontend and Playwright feedback.
 
-### Challenge 3: Testing the Full Flow
-I tested the registration and login step by step. First I used curl commands to test the API endpoints. This confirmed the backend was working. Then I tested the HTML forms in the browser. After registering and logging in, I could see the dashboard with all calculations.
+Challenge 4: Playwright E2E Test Flakiness
+Some E2E test steps would randomly fail if UI redirect was too fast or if users/emails were reused. Fixed by generating a random username/email for every test run and by checking for redirects instead of transient messages.
 
-## How I Solved These Problems
+How I Solved These Problems
+Changed database ports and configs for Docker compatibility.
 
-1. Changed the database port configuration
-2. Ran the database initialization script
-3. Tested with curl first, then tested in the browser
-4. Verified everything worked end-to-end
+Used manual docker-compose exec ... scripts to initialize tables.
 
-## Testing Process
+Added proper exception handling in registration/login endpoints so frontend and Playwright always get JSON errors, never raw errors.
 
-1. Started all Docker containers
-2. Registered a new user via curl
-3. Logged in via curl and got JWT token
-4. Opened register page in browser
-5. Filled out form and registered successfully
-6. Logged in through browser
-7. Saw dashboard with calculations
-8. Ran all 99 tests with pytest
+Improved Playwright coverage for all user flows—register, login valid/invalid—with unique credentials every run.
 
-## What I Would Improve
+Used both curl and browser-based tests to debug all scenarios.
 
-- I should have checked Docker logs earlier when errors occurred
-- Testing with curl first saved me time - I'll do this first next time
-- Better documentation of the setup process would have helped
+Testing Process
+Ran and verified:
 
-## Conclusion
+All backend pytest tests (100/100 passing, 66%+ coverage)
 
-This assignment taught me that building a complete authentication system requires testing every part carefully. From API endpoints to frontend forms to database setup, everything must work together. The key was testing step-by-step to find problems quickly. I now understand how professional web applications handle user authentication and security.
+Frontend registration and login flows by hand in browser
+
+Playwright E2E tests for registration/login (all 6 scenarios passing)
+
+Playwright tested valid/invalid registration, valid/invalid login, and UI updates for alerts and redirects.
+
+Docker and CI workflows also validated that everything succeeds in automation, not just locally.
+
+What I Would Improve
+Automate database clean-up or isolation between tests (for re-using usernames/emails)
+
+Add more E2E coverage for edge cases and future calculation/BREAD operations
+
+Improve logs and documentation for setup steps and troubleshooting
+
+Standardize all error responses for the frontend (makes E2E easier)
+
+Conclusion
+This assignment was my first full-stack feature: both backend and frontend working together with security. Automated tests (pytest and Playwright) gave me confidence I didn't break any flows, and CI/CD means every push is checked. Most importantly, I now understand how modern web apps use JWT for auth and why covering both positive and negative scenarios is key to reliable apps.

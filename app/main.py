@@ -21,7 +21,6 @@ from app.schemas.token import TokenResponse
 from app.schemas.user import UserCreate, UserResponse, UserLogin
 from app.database import Base, get_db, engine
 
-
 # Create tables on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -36,6 +35,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
 # Mount the static files directory
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -58,7 +58,6 @@ def register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
 # Dashboard page Route
-
 @app.get("/dashboard", response_class=HTMLResponse, tags=["web"])
 def dashboard_page(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
@@ -71,16 +70,15 @@ def read_health():
     return {"status": "ok"}
 
 # ------------------------------------------------------------------------------
-# User Registration Endpoint
+# User Registration Endpoint (UPDATED)
 # ------------------------------------------------------------------------------
 @app.post(
-    "/auth/register", 
-    response_model=UserResponse, 
+    "/auth/register",
+    response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
     tags=["auth"]
 )
 def register(user_create: UserCreate, db: Session = Depends(get_db)):
-    # Exclude confirm_password before passing data to User.register
     user_data = user_create.dict(exclude={"confirm_password"})
     try:
         user = User.register(db, user_data)
@@ -90,44 +88,59 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
     except ValueError as e:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed"
+        )
 
 # ------------------------------------------------------------------------------
-# User Login Endpoints
+# User Login Endpoints (UNCHANGED)
 # ------------------------------------------------------------------------------
 @app.post("/auth/login", response_model=TokenResponse, tags=["auth"])
 def login_json(user_login: UserLogin, db: Session = Depends(get_db)):
     """Login with JSON payload"""
-    auth_result = User.authenticate(db, user_login.username, user_login.password)
-    if auth_result is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+    try:
+        auth_result = User.authenticate(db, user_login.username, user_login.password)
+        if auth_result is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        user = auth_result["user"]
+        db.commit()  # Commit the last_login update
+
+        # Ensure expires_at is timezone-aware
+        expires_at = auth_result.get("expires_at")
+        if expires_at and expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        else:
+            expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
+
+        return TokenResponse(
+            access_token=auth_result["access_token"],
+            refresh_token=auth_result["refresh_token"],
+            token_type="bearer",
+            expires_at=expires_at,
+            user_id=user.id,
+            username=user.username,
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            is_active=user.is_active,
+            is_verified=user.is_verified
         )
-
-    user = auth_result["user"]
-    db.commit()  # Commit the last_login update
-
-    # Ensure expires_at is timezone-aware
-    expires_at = auth_result.get("expires_at")
-    if expires_at and expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=timezone.utc)
-    else:
-        expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
-
-    return TokenResponse(
-        access_token=auth_result["access_token"],
-        refresh_token=auth_result["refresh_token"],
-        token_type="bearer",
-        expires_at=expires_at,
-        user_id=user.id,
-        username=user.username,
-        email=user.email,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        is_active=user.is_active,
-        is_verified=user.is_verified
-    )
+    except HTTPException:
+        raise  # re-raise known errors
+    except Exception as e:
+        # Make all other unexpected errors return a JSON HTTP response for frontend/E2E consistency
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Login failed"
+        )
 
 @app.post("/auth/token", tags=["auth"])
 def login_form(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -148,7 +161,6 @@ def login_form(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
 # ------------------------------------------------------------------------------
 # Calculations Endpoints (BREAD)
 # ------------------------------------------------------------------------------
-# Create (Add) Calculation – using CalculationBase so that 'user_id' from the client is ignored.
 @app.post(
     "/calculations",
     response_model=CalculationResponse,
@@ -162,7 +174,7 @@ def create_calculation(
 ):
     """
     Compute and persist a calculation.
-    
+
     The endpoint reads the calculation type and inputs from the request (ignoring any extra fields),
     computes the result using the appropriate operation, and assigns the authenticated user's ID.
     """
@@ -238,35 +250,3 @@ def update_calculation(
     if calculation_update.inputs is not None:
         calculation.inputs = calculation_update.inputs
         calculation.result = calculation.get_result()
-    calculation.updated_at = datetime.utcnow()
-    db.commit()
-    db.refresh(calculation)
-    return calculation
-
-# Delete a Calculation
-@app.delete("/calculations/{calc_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["calculations"])
-def delete_calculation(
-    calc_id: str,
-    current_user = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    try:
-        calc_uuid = UUID(calc_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid calculation id format.")
-    calculation = db.query(Calculation).filter(
-        Calculation.id == calc_uuid,
-        Calculation.user_id == current_user.id
-    ).first()
-    if not calculation:
-        raise HTTPException(status_code=404, detail="Calculation not found.")
-    db.delete(calculation)
-    db.commit()
-    return None
-
-# ------------------------------------------------------------------------------
-# Main Block to Run the Server
-# ------------------------------------------------------------------------------
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8001, log_level="info")
